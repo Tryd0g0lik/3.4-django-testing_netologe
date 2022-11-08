@@ -13,17 +13,27 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from students.views import CoursesViewSet
+from django_testing import settings
+from students.views import CoursesViewSet, StudentViewSet
 
 router = DefaultRouter()
 router.register("courses", CoursesViewSet, basename="courses")
+router.register('student', StudentViewSet, basename="student")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("api/v1/", include(router.urls)),
-] + router.urls
+    ] + router.urls
+
+if settings.DEBUG:
+    import debug_toolbar
+
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
 

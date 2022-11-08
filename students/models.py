@@ -17,4 +17,6 @@ class Course(models.Model):
     students = models.ManyToManyField(
         Student,
         blank=True,
+        related_name="persons"
     )
+
