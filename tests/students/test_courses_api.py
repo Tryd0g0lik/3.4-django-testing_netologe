@@ -85,12 +85,15 @@ def test_example(
 
 @pytest.mark.django_db()
 def test_example_post(
+  # Arrange
   name_stude = get_name_random,
   title = get_courses_random,
   api_client = api_client,
   user_id = user
   ):
   api_client = APIClient()
+
+  # Act
 
   response = api_client.post('/courses/', data={
     'user' : user_id,
@@ -101,51 +104,3 @@ def test_example_post(
   # Accert
   assert response.status_code == 201
   assert Course.objects.count != 0
-
-# @pytest.mark.django_db()
-# def test_example_put(
-#   name_stude=get_name_random,
-#   title=get_courses_random,
-#   api_client=api_client,
-#   user_id=user
-# ):
-#   # Arrange
-#   name_studes = baker.make(
-#     "students.Student",
-#     name=name_stude,
-#   )
-#
-#   titles = baker.make(
-#     "students.Course",
-#     name=title,
-#   )
-#
-#   api_client = APIClient()
-#
-#   student = api_client.put(
-#     '/student/', data={
-#       'user': user_id,
-#       'name': name_studes,
-#     }
-#   )
-#   cours = api_client.post(
-#     '/courses/', data={
-#     'user': user_id,
-#     'name': titles,
-#     'student': name_studes.id,
-#     }
-#   )
-#
-#   old_data = student.get(pk=0)
-#   response = api_client.put(
-#     '/student/', data={
-#       old_data : 'PUT_request',
-#     }
-#   )
-#
-#
-#
-#   # Accert
-#   assert response.status_code == 204
-#   assert print(response)
-#   # assert Course.objects.count != 0
