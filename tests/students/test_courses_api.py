@@ -5,7 +5,7 @@ from rest_framework.authtoken.admin import User
 from rest_framework.test import APIClient
 from model_bakery import baker
 # import students.models
-from students.models import Course, Student
+from students.models import Course, Student, Faculty
 
 
 @pytest.fixture
@@ -74,22 +74,32 @@ def test_example(
 
   title_course = baker.make(
     "students.Course",
-     make_m2m = True,
      name = title,
-
     )
 
 
-  Student.objects.create(
-    # get_user=username ,
-    name=student.name,
-  )
+  # Student.objects.create(
+  #   # get_user=username ,
+  #   name=student.name,
+  # )
 
-  Course.objects.create(
-    # user_id = username,
-    name = title_course.name
-  )
+  # User.objects.filter(name = )
 
+  # Course.objects.create(
+  #   student = username,
+  #   name = title_course.name,
+  #   make_m2m=True
+  # )
+
+  # faculty = baker.make(
+  #   "students.Faculty",
+  #
+  # )
+
+  # Faculty.objects.create(
+  # student = Student.student.id,
+  # course = Course.course.id,
+  # )
 
   #Act
 
@@ -103,8 +113,9 @@ def test_example(
   response = api_client.get('/courses/')
 
   # Accert
-  assert response.status_code
+  assert response.status_code == 200
   data = response.json()
-  assert  data
+  assert len(data[0]) != 0
+  assert data
   # assert True
 

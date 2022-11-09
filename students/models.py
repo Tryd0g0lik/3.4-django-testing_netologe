@@ -9,14 +9,23 @@ class Student(models.Model):
         null=True,
     )
 
+    def __str__(self):
+        return self.name
 
 class Course(models.Model):
 
     name = models.TextField()
 
-    students = models.ManyToManyField(
+    student = models.ManyToManyField(
         Student,
         blank=True,
-        related_name="persons"
+        related_name="persons",
+        through='Faculty'
     )
 
+    def __str__(self):
+        return self.name
+
+class Faculty(models.Model):
+    student =  models.ForeignKey(Student, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)

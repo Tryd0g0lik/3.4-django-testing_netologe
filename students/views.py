@@ -7,6 +7,12 @@ from students.serializers import CourseSerializer, StudentSerializer
 # from django_filters.rest_framework import DjangoFilterBackend
 # from rest_framework.filters import SearchFilter
 
+class StudentViewSet(ModelViewSet):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    # SearchFilter = ["name",]
+    # DjangoFilterBackend=["id",]
+
 
 class CoursesViewSet(ModelViewSet):
 
@@ -16,8 +22,3 @@ class CoursesViewSet(ModelViewSet):
     # filterset_class = CourseFilter
 
 
-class StudentViewSet(ModelViewSet):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-    # SearchFilter = ["name",]
-    # DjangoFilterBackend=["id",]
