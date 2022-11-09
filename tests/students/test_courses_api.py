@@ -80,3 +80,33 @@ def test_example(
   data = response.json()
   assert len(data[0]) != 0
   assert data
+
+
+@pytest.mark.django_db()
+def test_example_post(
+  name_stude = get_name_random,
+  title = get_courses_random,
+  api_client = api_client
+  ):
+
+  # Arrange
+  baker.make(
+    "students.Student",
+    name = name_stude,
+ )
+
+  baker.make(
+    "students.Course",
+     name = title,
+    )
+
+  # Act
+  api_client = APIClient()
+
+  response = api_client.get('/courses/')
+
+  # Accert
+  assert response.status_code == 200
+  data = response.json()
+  assert len(data[0]) != 0
+  assert data
