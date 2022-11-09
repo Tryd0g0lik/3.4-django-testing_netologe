@@ -5,24 +5,20 @@ from rest_framework.authtoken.admin import User
 from rest_framework.test import APIClient
 from model_bakery import baker
 # import students.models
-from students.models import Course, Student, Faculty
-
+from students.models import *
 
 @pytest.fixture
 def api_client():
     return APIClient()
-
 
 # fixture для фабрики курсов
 @pytest.fixture
 def stude():
     return baker.make(Course)
 
-
 @pytest.fixture
 def getUser():
     return User.objects.create_user('admin')
-
 
 @pytest.mark.django_db(
   databases='netology_django_testing',
@@ -39,7 +35,6 @@ def get_name_random():
      "Кнорриг", "Мухин", ]
     )
   return name
-
 
 def get_courses_random():
   name = random.choice(
@@ -61,55 +56,23 @@ def get_courses_random():
 def test_example(
   name_stude = get_name_random,
   title = get_courses_random,
-  username = getUser,
   api_client = api_client
   ):
-#Arrange
-  student = baker.make(
+
+  # Arrange
+  baker.make(
     "students.Student",
     name = name_stude,
-    # _quantity = 3,
  )
 
-
-  title_course = baker.make(
+  baker.make(
     "students.Course",
      name = title,
     )
 
-
-  # Student.objects.create(
-  #   # get_user=username ,
-  #   name=student.name,
-  # )
-
-  # User.objects.filter(name = )
-
-  # Course.objects.create(
-  #   student = username,
-  #   name = title_course.name,
-  #   make_m2m=True
-  # )
-
-  # faculty = baker.make(
-  #   "students.Faculty",
-  #
-  # )
-
-  # Faculty.objects.create(
-  # student = Student.student.id,
-  # course = Course.course.id,
-  # )
-
-  #Act
-
-
+  # Act
   api_client = APIClient()
 
-  # response = api_client.post(
-  #   '/courses/',
-  #   name=Student.name,
-  # )
   response = api_client.get('/courses/')
 
   # Accert
@@ -117,5 +80,3 @@ def test_example(
   data = response.json()
   assert len(data[0]) != 0
   assert data
-  # assert True
-
