@@ -12,8 +12,8 @@ class Student(models.Model):
 
     birth_date = models.DateField(
         null=True,
-        help_text = """Дата регистрации"""
-
+        help_text = """Дата регистрации""",
+        auto_now_add=True,
     )
 
 
@@ -30,14 +30,15 @@ class Course(models.Model):
     name = models.CharField(
         max_length= 100,
         help_text = """Наименование курс""",
+        verbose_name="Title course",
         db_index=True
         )
 
     student = models.ManyToManyField(
         Student,
         blank=True,
-        related_name="persons",
-
+        through="Faculty",
+        through_fields= ["student", "course"],
         help_text = """ Привязанная таблица студентов"""
     )
 
@@ -49,8 +50,10 @@ class Course(models.Model):
     def __str__(self):
         return self.name
 
-# class Faculty(models.Model):
-#     student = models.ForeignKey(Student, on_delete=models.CASCADE,
-#                                  related_name='students_faculty')
-#     course = models.ForeignKey(Course, on_delete=models.CASCADE,
-#                                related_name = 'students_faculty')
+class Faculty(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    datestude = models.DateField(
+        null=True,
+        help_text ="Дата занятий"
+    )

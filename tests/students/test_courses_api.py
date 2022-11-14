@@ -167,7 +167,7 @@ def test_filtr_list_courses(
   # response_name_student = Student.objects.get('id').all()
   # response_student =StudentSerializer(response_name_student)
   # print("1: ", api_client(response_name_student, response_student))
-  response_id_course = Course.objects.filter(id = 1).first()
+  response_id_course = Course.objects.filter(id = 0).first()
   response_page = api_client.get(f'api/v1/courses/%s/' % (response_id_course, ))
   #
   # response = api_client.get(response_page, response_name_student)
