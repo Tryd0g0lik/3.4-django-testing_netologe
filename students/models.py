@@ -25,6 +25,7 @@ class Student(models.Model):
     def __str__(self):
         return self.name
 
+
 class Course(models.Model):
 
     name = models.CharField(
@@ -38,7 +39,7 @@ class Course(models.Model):
         Student,
         blank=True,
         through="Faculty",
-        through_fields= ["student", "course"],
+        through_fields= ("courses", "students"),
         help_text = """ Привязанная таблица студентов"""
     )
 
@@ -50,9 +51,20 @@ class Course(models.Model):
     def __str__(self):
         return self.name
 
+
 class Faculty(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    # students = models.ForeignKey(Student, on_delete=models.CASCADE,
+    #                              )
+    courses = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name="faculty_stude",
+        )
+    students = models.ForeignKey(
+        Student,
+        on_delete=models.CASCADE,
+        related_name= "faculty_stude",
+    )
     datestude = models.DateField(
         null=True,
         help_text ="Дата занятий"
