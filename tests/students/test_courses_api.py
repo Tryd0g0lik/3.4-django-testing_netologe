@@ -1,5 +1,6 @@
 # from django.contrib.auth import get_user_model
 import pytest
+import requests
 import random
 from rest_framework.authtoken.admin import User
 from rest_framework.test import APIClient # The client with the goal  refers to the model
@@ -133,15 +134,16 @@ def test_example_post(
   assert Course.objects.count != 0
 
 
-id_course = 2
+
 @pytest.mark.django_db()
-def test_filtr_list_courses(
+def test_filtr_by_name(
   name_stude : list = get_name_random,
   title : list = get_courses_random,
   api_client = api_client,
-  id_course : int = id_course,
+  id_course : int = 1,
   ):
   """
+  TODO: Checking filtering by name
   :param name_stude: this's list the names-students
   :param title:
   :param api_client:
@@ -152,6 +154,49 @@ def test_filtr_list_courses(
   baker.make(
     "students.Student",
     name = name_stude,
+
+ )
+
+  baker.make(
+    "students.Course",
+     name = title,
+    make_m2m=True
+    )
+
+  # Act
+  api_client = APIClient()
+  response_id_course = Course.objects.filter(id  = id_course)
+
+  params={'name' : '%s/' % (response_id_course[0], )}
+  response_page = api_client.get('/courses/', data=params)
+
+  # Accert
+  assert response_page.status_code == 200
+  data = response_page.json()
+  assert len(data[0]) != 0
+  assert data
+
+
+@pytest.mark.django_db()
+def test_filtr_by_id(
+  name_stude : list = get_name_random,
+  title : list = get_courses_random,
+  api_client = api_client,
+  id_course : int = 1,
+  ):
+  """
+  TODO: Checking filtering by id
+  :param name_stude: this's list the names-students
+  :param title:
+  :param api_client:
+  :return:
+  """
+
+  # Arrange
+  baker.make(
+    "students.Student",
+    name = name_stude,
+    make_m2m=True
  )
 
   baker.make(
@@ -161,22 +206,130 @@ def test_filtr_list_courses(
 
   # Act
   api_client = APIClient()
-  # title_courseId = Course.objects.get(id = id_course)
-  # name_student = Student.objects.get(course_id = id_course)
-  # id_student = Course.objects.get(id = id_course)
-  # response_name_student = Student.objects.get('id').all()
-  # response_student =StudentSerializer(response_name_student)
-  # print("1: ", api_client(response_name_student, response_student))
-  response_id_course = Course.objects.filter(id = 0).first()
-  response_page = api_client.get(f'api/v1/courses/%s/' % (response_id_course, ))
-  #
-  # response = api_client.get(response_page, response_name_student)
-  # print(f"response_page: {response_name_student}")
+  # response_id_course = Course.objects.filter(id  = 1)
 
-  r = {"f": '220'}
-  # Accert
-  # assert r
+  params={'id' : '%s/' % (id_course, )}
+  response_page = api_client.get('/courses/', data=params)
+
+
   assert response_page.status_code == 200
   data = response_page.json()
   assert len(data[0]) != 0
   assert data
+
+
+@pytest.mark.django_db()
+def test_post(
+
+  name_stude = get_name_random,
+  title = get_courses_random,
+  api_client = api_client,
+  user_id = user
+  ):
+  """
+    # -----------------
+    # The app for testing
+    TODO:
+    :param name_stune it's firstname student
+    :param title it's course title
+    :params api_client it's client (type the browser, app) then accessing to db
+    :return must be return the 201 code
+    # -----------------
+  """
+  # Arrange
+  params_student = {
+    'name' : 'RRRRRRRR'
+
+  }
+
+  params_courses = {
+    'name': 'fffffffffffffffffffff',
+    'student': 0,
+  }
+
+  api_client = APIClient()
+
+  # Act
+
+  response_st = api_client.post('/student/', data=params_student)
+  response_cour = api_client.post('/courses/', data=params_courses)
+
+  # Accert
+  assert response_st.status_code == 201
+  assert Student.objects.count != 0
+  assert response_cour.status_code == 201
+  assert Course.objects.count != 0
+
+
+@pytest.mark.django_db()
+def test_post_put(
+  # Arrange
+  name_stude = get_name_random,
+  title = get_courses_random,
+  api_client = api_client,
+  user_id = user
+  ):
+  """
+    # -----------------
+    # The app for testing
+    TODO: tests the POST request (with data-db from 'model_bakery')  \n
+     and a PUT request by customising data without 'model_bakery'
+    :param name_stune it's firstname student
+    :param title it's course title
+    :params api_client it's client (type the browser, app) then accessing to db
+    :return must be return the 201, 200 code
+    # -----------------
+  """
+  api_client = APIClient()
+
+  # Act
+
+  # Arrange
+  baker.make(
+    "students.Student",
+    name=name_stude,
+  )
+
+  baker.make(
+    "students.Course",
+    name=title,
+  )
+  response_put  = api_client.put('/courses/1/', data={
+    'id' : 1,
+    'name' : "YYYYYYYYYYYYYYYYYYYYYYYYY",
+    'student' : "kiki",
+  })
+
+
+  # Accert
+
+  assert Course.objects.count != 0
+  assert response_put.status_code == 200
+
+
+@pytest.mark.django_db()
+def test_delete(
+  # Arrange
+  name_stude=get_name_random,
+  title=get_courses_random,
+
+  id=1
+):
+
+  # Arrange
+  baker.make(
+    "students.Student",
+    name=name_stude,
+
+  )
+
+  baker.make(
+    "students.Course",
+    name=title,
+    make_m2m=True
+  )
+  api_client = APIClient()
+  respons_delete = api_client.delete('/courses/%s' % (id,))
+  # Accert
+  assert respons_delete.status_code == 301
+

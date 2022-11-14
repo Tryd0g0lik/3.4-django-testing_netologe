@@ -18,16 +18,17 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-import students
 from django_testing import settings
 from students.views import CoursesViewSet, StudentViewSet
 
+router = DefaultRouter()
+router.register("courses", CoursesViewSet, basename="courses")
+router.register('student', StudentViewSet, basename="student")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("api/v1/", include('students.urls')),
-    # path("api/v1/", include(router.urls)),
-    ]
+    path("api/v1/", include(router.urls)),
+    ] + router.urls
 
 if settings.DEBUG:
     import debug_toolbar

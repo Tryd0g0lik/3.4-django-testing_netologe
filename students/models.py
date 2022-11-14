@@ -6,7 +6,7 @@ class Student(models.Model):
 
     name = models.CharField(
         max_length= 100,
-        help_text= """Имя стубента""",
+        help_text= """Имя студента""",
         db_index=True
     )
 
@@ -38,6 +38,7 @@ class Course(models.Model):
     student = models.ManyToManyField(
         Student,
         blank=True,
+
         through="Faculty",
         through_fields= ("courses", "students"),
         help_text = """ Привязанная таблица студентов"""
