@@ -10,6 +10,7 @@ from students.models import *
 from students.serializers import StudentSerializer
 
 
+
 @pytest.fixture #  the pytest.fixture creates attribute from repeatedly code
 def api_client():
     return APIClient()
