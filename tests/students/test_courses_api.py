@@ -10,24 +10,27 @@ from students.models import *
 from students.serializers import StudentSerializer
 
 
-
 @pytest.fixture #  the pytest.fixture creates attribute from repeatedly code
 def api_client():
     return APIClient()
 
+
 @pytest.fixture
 def stude():
     return baker.make(Course)
+
 
 @pytest.fixture
 def user():
     user = User.objects.create_user('admin')
     return user.id
 
+
 @pytest.mark.django_db(
   databases='netology_django_testing',
   serialized_rollback=True,
 ) # Run the module 'model_bakery'
+
 
 
 def get_name_random():
@@ -63,6 +66,25 @@ def get_courses_random():
   return name
 
 
+@pytest.fixture
+def content_for_testing():
+  def testing(model: str, name: list, m2m: bool = False, **kwargs):
+    """
+    TODO: It's  creating the data for table of db and working test. When content line went the test, she will be
+    deleted
+    :param name: It's list of 'get_courses_random' def or 'get_name_random'
+    :param model: The name model of app. It's type row.
+    :param m2m: it's type relationship the many-to-many or not.
+    :param kwargs:
+    :return:
+    """
+    return baker.make(model=model,
+                       name=name,
+                       make_m2m=m2m
+                       )
+  return testing
+
+
 @pytest.mark.django_db()
 def test_example(
   name_stude = get_name_random,
@@ -82,13 +104,14 @@ def test_example(
   # Arrange
   baker.make(
     "students.Student",
-    name = name_stude,
- )
-
+    name=name_stude,
+    make_m2m=True
+  )
+  print("333")
   baker.make(
     "students.Course",
-     name = title,
-    )
+    name=title,
+  )
 
   # Act
   api_client = APIClient()
@@ -101,7 +124,8 @@ def test_example(
   assert len(data[0]) != 0
   assert data
 
-
+name_stude = None
+title = None
 @pytest.mark.django_db()
 def test_example_post(
   # Arrange
@@ -135,41 +159,59 @@ def test_example_post(
   assert Course.objects.count != 0
 
 
-
+name_stude = None
+title = None
 @pytest.mark.django_db()
 def test_filtr_by_name(
   name_stude : list = get_name_random,
   title : list = get_courses_random,
   api_client = api_client,
-  id_course : int = 1,
+  db_id = 1,
+  db_content=content_for_testing
   ):
   """
   TODO: Checking filtering by name
   :param name_stude: this's list the names-students
-  :param title:
-  :param api_client:
+  :param title: It's course name
+  :param api_client: id's student id line of db
+  :param id_course: it's course  id line of db
   :return:
   """
 
   # Arrange
+  print("000")
+  # db_content(
+  #   model="students.Course",
+  #   m2m=True,
+  #   name=title,
+  #   ) #  creating the data for table of db
+  print("111")
+  # db_content(
+  #   model="students.Student",
+  #   name=name_stude,
+  #   )
+  print("222")
+
   baker.make(
     "students.Student",
-    name = name_stude,
-
- )
-
+    name=name_stude,
+    make_m2m=True
+  )
+  print("333")
   baker.make(
     "students.Course",
-     name = title,
-    make_m2m=True
-    )
-
+    name=title,
+  )
   # Act
+  print("444")
   api_client = APIClient()
-  response_id_course = Course.objects.filter(id  = id_course)
 
-  params={'name' : '%s/' % (response_id_course[0], )}
+  for r in Student.objects.all(): print("444-111", r.id, end=" ")
+  print("555")
+  params={'name' : '%s' % (r)}
+  print("6666", params)
   response_page = api_client.get('/courses/', data=params)
+  print("777")
 
   # Accert
   assert response_page.status_code == 200
@@ -177,7 +219,8 @@ def test_filtr_by_name(
   assert len(data[0]) != 0
   assert data
 
-
+name_stude = None
+title = None
 @pytest.mark.django_db()
 def test_filtr_by_id(
   name_stude : list = get_name_random,
@@ -208,17 +251,21 @@ def test_filtr_by_id(
   # Act
   api_client = APIClient()
   # response_id_course = Course.objects.filter(id  = 1)
+  for r in Course.objects.all() : i = r.id
 
-  params={'id' : '%s/' % (id_course, )}
-  response_page = api_client.get('/courses/', data=params)
-
+  print(f"i: {i}")
+  params={'id' : '%s' % (i, )}
+  print(f"params: {params}")
+  response_page = api_client.get('/courses/%s/' % (i,))
+  print(f"response_page: {response_page.json()}")
 
   assert response_page.status_code == 200
   data = response_page.json()
-  assert len(data[0]) != 0
+  assert len(data)
   assert data
 
-
+name_stude = None
+title = None
 @pytest.mark.django_db()
 def test_post(
 
@@ -261,7 +308,8 @@ def test_post(
   assert response_cour.status_code == 201
   assert Course.objects.count != 0
 
-
+name_stude = None
+title = None
 @pytest.mark.django_db()
 def test_post_put(
   # Arrange
@@ -295,8 +343,8 @@ def test_post_put(
     "students.Course",
     name=title,
   )
-  response_put  = api_client.put('/courses/1/', data={
-    'id' : 1,
+  for r in Course.objects.filter() : i = r.id
+  response_put  = api_client.put('/courses/%s/' % (i,), data={
     'name' : "YYYYYYYYYYYYYYYYYYYYYYYYY",
     'student' : "kiki",
   })
@@ -307,7 +355,8 @@ def test_post_put(
   assert Course.objects.count != 0
   assert response_put.status_code == 200
 
-
+name_stude = None
+title = None
 @pytest.mark.django_db()
 def test_delete(
   # Arrange
