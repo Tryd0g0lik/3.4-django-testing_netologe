@@ -1,13 +1,11 @@
 # from django.contrib.auth import get_user_model
 import pytest
-import requests
 import random
 from rest_framework.authtoken.admin import User
 from rest_framework.test import APIClient # The client with the goal  refers to the model
 from model_bakery import baker # The app for generation content, for what would  be testing models
-# import students.models
 from students.models import *
-from students.serializers import StudentSerializer
+
 
 
 @pytest.fixture #  the pytest.fixture creates attribute from repeatedly code
@@ -121,7 +119,7 @@ def test_example(
   # Accert
   assert response.status_code == 200
   data = response.json()
-  assert len(data[0]) != 0
+  assert len(data) != 0
   assert data
 
 name_stude = None
@@ -166,8 +164,6 @@ def test_filtr_by_name(
   name_stude : list = get_name_random,
   title : list = get_courses_random,
   api_client = api_client,
-  db_id = 1,
-  db_content=content_for_testing
   ):
   """
   TODO: Checking filtering by name
@@ -197,26 +193,22 @@ def test_filtr_by_name(
     name=name_stude,
     make_m2m=True
   )
-  print("333")
+
   baker.make(
     "students.Course",
     name=title,
   )
   # Act
-  print("444")
   api_client = APIClient()
 
-  for r in Student.objects.all(): print("444-111", r.id, end=" ")
-  print("555")
+  for r in Student.objects.all(): r.id
   params={'name' : '%s' % (r)}
-  print("6666", params)
   response_page = api_client.get('/courses/', data=params)
-  print("777")
 
   # Accert
   assert response_page.status_code == 200
   data = response_page.json()
-  assert len(data[0]) != 0
+  assert len(data) != 0
   assert data
 
 name_stude = None
@@ -226,7 +218,6 @@ def test_filtr_by_id(
   name_stude : list = get_name_random,
   title : list = get_courses_random,
   api_client = api_client,
-  id_course : int = 1,
   ):
   """
   TODO: Checking filtering by id
@@ -250,30 +241,17 @@ def test_filtr_by_id(
 
   # Act
   api_client = APIClient()
-  # response_id_course = Course.objects.filter(id  = 1)
   for r in Course.objects.all() : i = r.id
-
-  print(f"i: {i}")
-  params={'id' : '%s' % (i, )}
-  print(f"params: {params}")
   response_page = api_client.get('/courses/%s/' % (i,))
-  print(f"response_page: {response_page.json()}")
 
   assert response_page.status_code == 200
   data = response_page.json()
   assert len(data)
   assert data
 
-name_stude = None
-title = None
-@pytest.mark.django_db()
-def test_post(
 
-  name_stude = get_name_random,
-  title = get_courses_random,
-  api_client = api_client,
-  user_id = user
-  ):
+@pytest.mark.django_db()
+def test_post():
   """
     # -----------------
     # The app for testing
@@ -295,10 +273,8 @@ def test_post(
     'student': 0,
   }
 
-  api_client = APIClient()
-
   # Act
-
+  api_client = APIClient()
   response_st = api_client.post('/student/', data=params_student)
   response_cour = api_client.post('/courses/', data=params_courses)
 
@@ -316,7 +292,6 @@ def test_post_put(
   name_stude = get_name_random,
   title = get_courses_random,
   api_client = api_client,
-  user_id = user
   ):
   """
     # -----------------
@@ -349,7 +324,6 @@ def test_post_put(
     'student' : "kiki",
   })
 
-
   # Accert
 
   assert Course.objects.count != 0
@@ -362,8 +336,6 @@ def test_delete(
   # Arrange
   name_stude=get_name_random,
   title=get_courses_random,
-
-  id=1
 ):
 
   # Arrange
@@ -378,8 +350,10 @@ def test_delete(
     name=title,
     make_m2m=True
   )
+
+  for r in Course.objects.filter() : i = r.id
   api_client = APIClient()
-  respons_delete = api_client.delete('/courses/%s' % (id,))
+  respons_delete = api_client.delete('/courses/%s' % (i,))
   # Accert
   assert respons_delete.status_code == 301
 
