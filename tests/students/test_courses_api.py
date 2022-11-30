@@ -1,6 +1,6 @@
 # from django.contrib.auth import get_user_model
 import pytest
-import requests
+
 import random
 from rest_framework.authtoken.admin import User
 from rest_framework.test import APIClient # The client with the goal  refers to the model
