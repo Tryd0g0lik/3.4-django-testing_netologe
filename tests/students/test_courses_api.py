@@ -1,27 +1,27 @@
-# from django.contrib.auth import get_user_model
+from pprint import pprint
+
 import pytest
 
 import random
 from rest_framework.authtoken.admin import User
 from rest_framework.test import APIClient # The client with the goal  refers to the model
 from model_bakery import baker # The app for generation content, for what would  be testing models
-# import students.models
 from students.models import *
-from students.serializers import StudentSerializer
 
 
-@pytest.fixture #  the pytest.fixture creates attribute from repeatedly code
+@pytest.fixture(scope='package' ) #  the pytest.fixture creates attribute from repeatedly code
 def api_client():
-    return APIClient()
+  def factory():
+    return APIClient
+  return factory
 
-@pytest.fixture
-def stude():
-    return baker.make(Course)
 
 @pytest.fixture
 def user():
-    user = User.objects.create_user('admin')
-    return user.id
+  def factory():
+      user = User.objects.create_user('admin')
+      return user.id
+  return factory
 
 @pytest.mark.django_db(
   databases='netology_django_testing',
@@ -41,6 +41,7 @@ def get_name_random():
      "Кнорриг", "Мухин", ]
     )
   return name
+
 
 def get_courses_random():
   # -----------------
@@ -62,11 +63,43 @@ def get_courses_random():
   return name
 
 
+def post_studet_db():
+  """
+  TODO: This's fixture creating data-base from Student name
+  :return: def factory for db generation when each calling
+  """
+  _mak = baker.make(
+    "students.Student",
+    name = get_name_random,
+  )
+  return _mak
+
+
+def post_course_db():
+  """
+  TODO: This's fixture creating data-base from Student name
+  :return: def factory for db generation when each calling
+  """
+  _mak = baker.make(
+    "students.Course",
+    name = get_courses_random,
+    make_m2m=True
+    )
+  return _mak
+
+@pytest.fixture(scope='session')
+def get_id_first_course():
+  def factory():
+    _first_course = Course.objects.first()
+    return _first_course.id
+  return factory
+
+
 @pytest.mark.django_db()
 def test_example(
-  name_stude = get_name_random,
-  title = get_courses_random,
-  api_client = api_client
+  studen=post_studet_db,
+  courses=post_course_db,
+  api_client = api_client,
   ):
   """
   # -----------------
@@ -79,15 +112,8 @@ def test_example(
   """
 
   # Arrange
-  baker.make(
-    "students.Student",
-    name = name_stude,
- )
-
-  baker.make(
-    "students.Course",
-     name = title,
-    )
+  _studen = studen()
+  _courses = courses()
 
   # Act
   api_client = APIClient()
@@ -104,8 +130,8 @@ def test_example(
 @pytest.mark.django_db()
 def test_example_post(
   # Arrange
-  name_stude = get_name_random,
-  title = get_courses_random,
+  studen=post_studet_db,
+  courses=post_course_db,
   api_client = api_client,
   user_id = user
   ):
@@ -119,14 +145,19 @@ def test_example_post(
     :return must be return the 201 code
     # -----------------
   """
+
+  _studen = studen()
+  _courses = courses()
+
   api_client = APIClient()
 
+  _ferst_cours = Course.objects.first()
   # Act
 
   response = api_client.post('/courses/', data={
-    'user' : user_id,
-    'name' : title,
-    'student' : name_stude,
+    'user' : "%s" % (user_id,),
+    'name' : "%s" % (_ferst_cours.name,),
+    'student' : "%s" % (_ferst_cours.student,),
   })
 
   # Accert
@@ -137,10 +168,11 @@ def test_example_post(
 
 @pytest.mark.django_db()
 def test_filtr_by_name(
-  name_stude : list = get_name_random,
-  title : list = get_courses_random,
-  api_client = api_client,
-  id_course : int = 1,
+  studen=post_studet_db,
+  courses=post_course_db,
+  api_client=api_client,
+  user=user,
+  _course_id = get_id_first_course,
   ):
   """
   TODO: Checking filtering by name
@@ -149,25 +181,21 @@ def test_filtr_by_name(
   :param api_client:
   :return:
   """
-
   # Arrange
-  baker.make(
-    "students.Student",
-    name = name_stude,
-
- )
-
-  baker.make(
-    "students.Course",
-     name = title,
-    make_m2m=True
-    )
+  _studen = studen()
+  _courses = courses()
 
   # Act
-  api_client = APIClient()
-  response_id_course = Course.objects.filter(id  = id_course)
+  # t = []
+  # c = Course.objects.get(id=_course_id)
+  # t.append([r for r in c])
 
-  params={'name' : '%s/' % (response_id_course[0], )}
+  # if t != [] or t != [[]]:
+
+  response_id_course = Course.objects.first()
+
+  api_client = APIClient()
+  params={'name' : "%s" % (response_id_course.name,)}
   response_page = api_client.get('/courses/', data=params)
 
   # Accert
@@ -176,13 +204,15 @@ def test_filtr_by_name(
   assert len(data[0]) != 0
   assert data
 
+  # else:
+  #   assert 2 == 1
+
 
 @pytest.mark.django_db()
 def test_filtr_by_id(
-  name_stude : list = get_name_random,
-  title : list = get_courses_random,
-  api_client = api_client,
-  id_course : int = 1,
+  studen=post_studet_db,
+  courses=post_course_db,
+  _course_id = get_id_first_course,
   ):
   """
   TODO: Checking filtering by id
@@ -193,23 +223,15 @@ def test_filtr_by_id(
   """
 
   # Arrange
-  baker.make(
-    "students.Student",
-    name = name_stude,
-    make_m2m=True
- )
-
-  baker.make(
-    "students.Course",
-     name = title,
-    )
+  _studen = studen()
+  _courses = courses()
 
   # Act
-  api_client = APIClient()
-  # response_id_course = Course.objects.filter(id  = 1)
+  _api_client = APIClient()
 
-  params={'id' : '%s/' % (id_course, )}
-  response_page = api_client.get('/courses/', data=params)
+
+  params={'id' : '%s/' % (_course_id, )}
+  response_page = _api_client.get('/courses/', data=params)
 
 
   assert response_page.status_code == 200
@@ -220,11 +242,9 @@ def test_filtr_by_id(
 
 @pytest.mark.django_db()
 def test_post(
-
-  name_stude = get_name_random,
+  name = get_name_random,
   title = get_courses_random,
-  api_client = api_client,
-  user_id = user
+  _course_id = get_id_first_course,
   ):
   """
     # -----------------
@@ -238,20 +258,22 @@ def test_post(
   """
   # Arrange
   params_student = {
-    'name' : 'RRRRRRRR'
+    'name' : "%s" % (name,),
 
   }
 
-  params_courses = {
-    'name': 'fffffffffffffffffffff',
-    'student': 0,
-  }
 
   api_client = APIClient()
 
   # Act
 
   response_st = api_client.post('/student/', data=params_student)
+
+
+  params_courses = {
+    'name': "%s" % (title,),
+    'student': "%s" % (_course_id,),
+  }
   response_cour = api_client.post('/courses/', data=params_courses)
 
   # Accert
@@ -264,10 +286,10 @@ def test_post(
 @pytest.mark.django_db()
 def test_post_put(
   # Arrange
-  name_stude = get_name_random,
+  studen=post_studet_db,
+  courses=post_course_db,
+  name = get_name_random,
   title = get_courses_random,
-  api_client = api_client,
-  user_id = user
   ):
   """
     # -----------------
@@ -285,19 +307,14 @@ def test_post_put(
   # Act
 
   # Arrange
-  baker.make(
-    "students.Student",
-    name=name_stude,
-  )
+  _studen = studen()
+  _courses = courses()
+  _course = Course.objects.first()
 
-  baker.make(
-    "students.Course",
-    name=title,
-  )
-  response_put  = api_client.put('/courses/1/', data={
-    'id' : 1,
-    'name' : "YYYYYYYYYYYYYYYYYYYYYYYYY",
-    'student' : "kiki",
+  response_put  = api_client.put(f'/courses/{_course.id}/', data={
+    'id' : "%s" %(_course.id,),
+    'name' : "%s" % (title,),
+    'student' : "%s" % (name,),
   })
 
 
@@ -310,26 +327,19 @@ def test_post_put(
 @pytest.mark.django_db()
 def test_delete(
   # Arrange
-  name_stude=get_name_random,
-  title=get_courses_random,
-
-  id=1
+  studen=post_studet_db,
+  courses=post_course_db,
+  _course_id = get_id_first_course
 ):
 
   # Arrange
-  baker.make(
-    "students.Student",
-    name=name_stude,
+  _student = studen()
+  _courses = courses()
 
-  )
+  # _title =
 
-  baker.make(
-    "students.Course",
-    name=title,
-    make_m2m=True
-  )
   api_client = APIClient()
-  respons_delete = api_client.delete('/courses/%s' % (id,))
+  respons_delete = api_client.delete('/courses/%s' % (_course_id,))
   # Accert
   assert respons_delete.status_code == 301
 
